@@ -44,11 +44,15 @@
     const optArticleSelector = '.post',
         optTitleSelector = '.post-title',
         optTitleListSelector = '.titles',
-        optArticleTagsSelector = '.post-tags .list';
-        optArticleAuthorSelector = '.post-author';
-        optTagsListSelector = '.tags.list';
-        optCloudClassCount = 5;
-        optCloudClassPrefix = 'tag-size-';
+        optArticleTagsSelector = '.post-tags .list',
+        optArticleAuthorSelector = '.post-author',
+        optTagsListSelector = '.tags.list',
+        optCloudClassCount = 5,
+        optCloudClassPrefix = 'tag-size-',
+        optAuthorsListSelector = '.authors.list',
+        optCloudClassCountAuthors = 4,
+        optCloudClassPrefixAuthors = 'author-size-';
+
 
     function generateTitleLinks(customSelector = '') {
 
@@ -88,7 +92,30 @@
 
     generateTitleLinks();
 
+    function calculateAuthorParams(authors) {
 
+        const params = {
+            max: 0,
+            min: 999999
+        };
+
+        for (let author in authors) {
+
+            params.max = Math.max(authors[author], params.max);
+
+            params.min = Math.min(authors[author], params.min);
+
+        }
+        return params;
+
+    }
+
+    function calculateAuthorClass(count, params) {
+
+        const classNumber = Math.floor(((count - params.min) / (params.max - params.min)) * optCloudClassCountAuthors + 1);
+
+        return optCloudClassPrefixAuthors + classNumber;
+    }
 
 
     function calculateTagsParams(tags) {
@@ -108,14 +135,14 @@
     }
 
 
-    function calculateTagClass(count, params){
-      const normalizedCount = count - params.min;
-      const normalizedMax = params.max - params.min;
-      const percentage = normalizedCount / normalizedMax;
-      const classNumber = Math.floor(percentage * (optCloudClassCount - 1) + 1);
-      console.log(optCloudClassPrefix + classNumber);
-      return optCloudClassPrefix + classNumber;
-      }
+    function calculateTagClass(count, params) {
+        const normalizedCount = count - params.min;
+        const normalizedMax = params.max - params.min;
+        const percentage = normalizedCount / normalizedMax;
+        const classNumber = Math.floor(percentage * (optCloudClassCount - 1) + 1);
+        console.log(optCloudClassPrefix + classNumber);
+        return optCloudClassPrefix + classNumber;
+    }
 
 
 
@@ -176,9 +203,9 @@
         /* [NEW] START LOOP: for each tag in allTags: */
         for (let tag in allTags) {
 
-          const tagLinkHTML = '<li><a  class="' + calculateTagClass(allTags[tag], tagsParams) + '" href="#tag-' + tag + '">' + tag + '</a></li>' + ' ';
+            const tagLinkHTML = '<li><a  class="' + calculateTagClass(allTags[tag], tagsParams) + '" href="#tag-' + tag + '">' + tag + '</a></li>' + ' ';
 
-          allTagsHTML += tagLinkHTML;
+            allTagsHTML += tagLinkHTML;
         }
         /* [NEW] END LOOP: for each tag in allTags: */
 
@@ -233,6 +260,8 @@
     addClickListenersToTags();
 
     function generateAuthors() {
+        let allAuthors = {};
+
         const articles = document.querySelectorAll(optArticleSelector);
 
         for (let article of articles) {
@@ -246,8 +275,33 @@
 
             html = html + linkHTML;
 
-            titleList.innerHTML = html
+            if (!allAuthors[authorName]) {
+                allAuthors[authorName] = 1;
+            } else {
+                allAuthors[authorName]++;
+            }
+
+            titleList.innerHTML = html;
         }
+
+        const authorList = document.querySelector(optAuthorsListSelector);
+        const authorsParams = calculateAuthorsParams(allAuthors);
+
+        let allAuthorsHTML = '';
+
+
+
+        for (let authorName in allAuthors) {
+
+
+
+          const authorLinkHTML = calculateAuthorClass(allAuthors[authorName], authorsParams);
+
+          allAuthorsHTML += '<li><a href="#author-' + authorName + '" class="' + authorLinkHTML + '">' + authorName + '</a></li>';
+            console.log(allAuthorsHTML);
+        }
+
+        authorList.innerHTML = allAuthorsHTML;
 
 
     }
